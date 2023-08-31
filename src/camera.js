@@ -19,7 +19,8 @@ import {
  */
 import { sizes } from "./sizes";
 
-export {camera, controls}
+export { camera, controls}
+
 
 /**
  * Camera

@@ -2,11 +2,14 @@
 // physics - distanceConstraint - force the bodies to keep a distance between each other
 // set pinkballs replaces the sphere
 
+//todo resize
 import * as THREE from "three";
 import CANNON from "cannon";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { HoloEffect } from "./HoloEffect.js";
 
 /**
  * Base
@@ -236,7 +239,6 @@ gltfLoader.load("230827path.glb", (gltf) => {
  */
 // todo: use './lights.js' later
 
-
 /**
  * Fireflies
  */
@@ -279,11 +281,11 @@ import {
 /**
  * Spheres
  */
-import { spheres, createSphere } from "./spheres";
+// import { spheres, createSphere } from "./spheres";
 
-createSphere(sphereShapeScale, { x: 0, y: 3, z: 0 });
-createSphere(sphereShapeScale, sphereBeginPosition);
-//console.log(objectToUpdate)
+// createSphere(sphereShapeScale, { x: 0, y: 3, z: 0 });
+// createSphere(sphereShapeScale, sphereBeginPosition);
+// //console.log(objectToUpdate)
 
 /**
  * createBox
@@ -304,11 +306,28 @@ renderer.toneMappingExposure = 0.8;
 
 //todo setting()
 const params = {
+  progress: 0,
   exposure: 2,
-  bloomStrength: 1.5, //3
-  bloomThreshold: 0.05, //0.01
-  bloomRadius: 0.8, //0.27
+  bloomStrength: 1, //3//1.5
+  bloomThreshold: 0.05, //0.01//0.05
+  bloomRadius: 0.8, //0.27//0.8
 };
+// post-processing GUI
+gui.add(params, "progress", 0, 3, 0.01).onChange(()=>{
+  holoEffect.uniforms.progress.value = params.progress;
+});
+gui.add(params, "exposure", 0, 3, 0.01).onChange(()=>{
+  renderer.toneMappingExposure = params.exposure;
+});
+gui.add(params, "bloomStrength", 0, 3, 0.01).onChange((val)=>{
+  bloomPass.strength = val;
+});
+gui.add(params, "bloomThreshold", 0, 3, 0.01).onChange((val)=>{
+  bloomPass.threshold = val;
+});
+gui.add(params, "bloomRadius", 0, 3, 0.01).onChange((val)=>{
+  bloomPass.radius = val;
+});
 
 //todo initPost()
 const renderScene = new RenderPass(scene, camera);
@@ -321,9 +340,15 @@ const bloomPass = new UnrealBloomPass(
 bloomPass.threshold = params.bloomThreshold;
 bloomPass.strength = params.bloomStrength;
 bloomPass.radius = params.bloomRadius;
+
+const holoEffect = new ShaderPass(HoloEffect);
+//holoEffect.uniforms['scale'].value = 4;
+
 const composer = new EffectComposer(renderer);
 composer.addPass(renderScene);
 composer.addPass(bloomPass);
+composer.addPass(holoEffect);
+
 //todo composer resize
 composer.setSize(sizes.width, sizes.height);
 
@@ -331,8 +356,9 @@ composer.setSize(sizes.width, sizes.height);
 let envMap, m;
 const humanScale = 0.6;
 let exportHumanModel;
+let getChildHumanModel;
 // define humanModel to get huamnModel in new THREE.TextureLoader().load('env.jpg', (texture)
-let humanModel;
+//let humanModel;
 
 //! pmremGenerator
 const pmremGenertor = new THREE.PMREMGenerator(renderer);
@@ -341,7 +367,7 @@ pmremGenertor.compileEquirectangularShader();
 new THREE.TextureLoader().load("env.jpg", (texture) => {
   envMap = pmremGenertor.fromEquirectangular(texture).texture;
   //envMap.mapping = THREE.EquirectangularReflectionMapping;
-  console.log(envMap);
+  //console.log(envMap);
   //console.log(envMapTextureLoader)
   pmremGenertor.dispose();
 
@@ -351,11 +377,13 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
     const humanModelObject = gltf.scene;
     exportHumanModel = humanModelObject;
     // get human model
-    humanModel = gltf.scene.children.find(
+    const humanModel = gltf.scene.children.find(
       (child) => (child) => child.name === "HG_Body"
     );
     humanModel.scale.set(humanScale, humanScale, humanScale);
     humanModel.geometry.center();
+    getChildHumanModel = humanModel;
+
     // apply material
     //humanModel.material = humanModelMaterial
     m = new THREE.MeshStandardMaterial({
@@ -388,7 +416,7 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
     }
       ` + shader.fragmentShader;
       //! userData
-      m.userData.shader = shader;
+      // m.userData.shader = shader;
       shader.fragmentShader = shader.fragmentShader.replace(
         `#include <envmap_physical_pars_fragment>`,
         `#ifdef USE_ENVMAP
@@ -422,7 +450,7 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
     
           reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
     
-          reflectVec = rotate(reflectVec, vec3(0.0, 1.0, 0.0), uTime*0.05);
+          reflectVec = rotate(reflectVec, vec3(1.0, 0.0, 0.0), uTime*0.05);
 
           vec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );
     
@@ -461,12 +489,13 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
     
     #endif`
       );
+      m.userData.shader = shader;
     };
     humanModel.material = m;
     // scene add
     scene.add(humanModelObject);
     // print humanModel
-    console.log("[inner]humanModel = " + humanModel);
+    //console.log("[inner]humanModel = " + humanModel);
   });
 });
 
@@ -499,7 +528,7 @@ let previousTime = 0;
 const time = 0;
 
 const tick = () => {
-  // exportHumanModel.rotation.y +=0.01
+  //exportHumanModel.rotation.y +=0.01
 
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - previousTime;
@@ -510,29 +539,43 @@ const tick = () => {
   world.step(1 / 60, deltaTime, 3);
 
   //------------------
-  for (const object of spheres) {
-    let x = 1 / object.body.position.x;
-    //不能有xyz達到0
-    object.body.applyLocalForce(
-      new CANNON.Vec3(
-        -10 * object.body.position.x,
-        -10 * object.body.position.y,
-        -10 * object.body.position.z
-      ),
-      new CANNON.Vec3(0, 0, 0)
-    );
-    object.mesh.quaternion.copy(object.body.quaternion);
-  }
+  // for (const object of spheres) {
+  //   let x = 1 / object.body.position.x;
+  //   //不能有xyz達到0
+  //   object.body.applyLocalForce(
+  //     new CANNON.Vec3(
+  //       -10 * object.body.position.x,
+  //       -10 * object.body.position.y,
+  //       -10 * object.body.position.z
+  //     ),
+  //     new CANNON.Vec3(0, 0, 0)
+  //   );
+  //   object.mesh.quaternion.copy(object.body.quaternion);
+  // }
   for (const object of objectToUpdate) {
     object.mesh.position.copy(object.body.position);
     object.mesh.quaternion.copy(object.body.quaternion);
   }
 
   // Update Material
-  firefliesMaterial.uniforms.uTime.value = elapsedTime;
+  //firefliesMaterial.uniforms.uTime.value = elapsedTime;
 
   //m.userData.shader.uniforms.uTime.value = elapsedTime
   //!export model //console.log(exportHumanModel)
+  if (getChildHumanModel) {
+    if (m.userData) {
+      //console.log(m.userData.shader)
+      if (m.userData.shader) {
+        getChildHumanModel.material.userData.shader.uniforms.uTime.value =
+          elapsedTime;
+        holoEffect.uniforms.uTime.value = elapsedTime;
+      }
+    }
+    getChildHumanModel.rotation.y = elapsedTime * 0.05;
+    //getChildHumanModel.rotation.y -=0.01
+  }
+  //console.log(exportHumanModel)
+  //console.log(getChildHumanModel)
 
   // if m.userData exists, update shader uniforms
   // print humanModel

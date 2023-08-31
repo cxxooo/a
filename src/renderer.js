@@ -16,13 +16,12 @@ import {
  * Sizes
  */
 import { sizes } from "./sizes";
-
+import {  camera, controls } from "./camera.js";
 export { renderer };
 
 /**
  * Renderer
  */
-
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
   antialias: true,
