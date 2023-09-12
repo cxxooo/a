@@ -10,6 +10,7 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { HoloEffect } from "./HoloEffect.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 /**
  * Base
@@ -255,12 +256,80 @@ scene.add(fireflies);
 /**
  * Sizes
  */
-import { sizes } from "./sizes";
+//import { sizes } from "./sizes";
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+};
+
+window.addEventListener("resize", () => {
+  // Update sizes
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  // Update camera
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // Update fireflies
+  firefliesMaterial.uniforms.uPixelRatio.value = Math.min(
+    window.devicePixelRatio,
+    2
+  );
+});
+
+/**
+ * Fullscreen
+ */
+window.addEventListener('dblclick', () =>
+{
+    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement
+
+    if(!fullscreenElement)
+    {
+        if(canvas.requestFullscreen)
+        {
+            canvas.requestFullscreen()
+        }
+        else if(canvas.webkitRequestFullscreen)
+        {
+            canvas.webkitRequestFullscreen()
+        }
+    }
+    else
+    {
+        if(document.exitFullscreen)
+        {
+            document.exitFullscreen()
+        }
+        else if(document.webkitExitFullscreen)
+        {
+            document.webkitExitFullscreen()
+        }
+    }
+})
 
 /**
  * Camera
  */
-import { camera, controls } from "./camera";
+//import { camera, controls } from "./camera";
+const camera = new THREE.PerspectiveCamera(
+  45,
+  sizes.width / sizes.height,
+  0.1,
+  100
+);
+camera.position.x = 1;
+camera.position.y = 0;
+camera.position.z = 1;
+
+// work Controls
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
 
 /**
  * Renderer
@@ -296,6 +365,27 @@ import { boxes, createBox } from "./boxes";
 // const sphereMaterial = new THREE.MeshStandardMaterial({
 //   metalness: 0.3,
 //   roughness: 0.4,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // todo replicating amazing midwarm.com look with threejs
 // import {useState} from 'react'
@@ -519,6 +609,28 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
 //     scene.add(gltf.scene)
 //   }
 // )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Animate
