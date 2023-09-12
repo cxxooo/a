@@ -1,4 +1,3 @@
-
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
@@ -19,24 +18,22 @@ import {
  */
 import { sizes } from "./sizes";
 
-export { camera, controls}
-
+export { camera, controls };
 
 /**
  * Camera
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(
-    45,
-    sizes.width / sizes.height,
-    0.1,
-    100
-  );
-  camera.position.x = 1;
-  camera.position.y = 0;
-  camera.position.z = 1;
+  45,
+  sizes.width / sizes.height,
+  0.1,
+  100
+);
+camera.position.x = 1;
+camera.position.y = 0;
+camera.position.z = 1;
 
-  // work Controls
-  const controls = new OrbitControls(camera, canvas);
-  controls.enableDamping = true;
-  
+// work Controls
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = false;

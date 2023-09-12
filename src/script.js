@@ -1,6 +1,4 @@
-// walking on the sphere surface
-// physics - distanceConstraint - force the bodies to keep a distance between each other
-// set pinkballs replaces the sphere
+// all the models has been temporarily cancelled "add into scene"
 
 //todo resize
 import * as THREE from "three";
@@ -11,6 +9,9 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { HoloEffect } from "./HoloEffect.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { gltfLoader } from "./loaders";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
 
 /**
  * Base
@@ -40,7 +41,7 @@ import {
   torusKnotSphereTexture_blackwhite,
 } from "./loaders";
 
-import { gltfLoader } from "./loaders";
+
 
 /**
  * Material
@@ -64,7 +65,7 @@ import {
  * Physics
  */
 import { world, planet, concreteMaterial, plasticMaterial } from "./physics";
-scene.add(planet);
+//scene.add(planet);
 
 /**
  * Objects
@@ -73,7 +74,7 @@ import {
   torusKnotGeometryMesh,
   torusKnotGeometryMeshScaleNumber,
 } from "./objects";
-scene.add(torusKnotGeometryMesh);
+//scene.add(torusKnotGeometryMesh);
 
 // GUI
 gui
@@ -126,9 +127,25 @@ gltfLoader.load(
     // Apply materials
     floorSphereMesh.material = floorSphereMeshMaterial;
 
-    scene.add(gltf.scene);
+    //scene.add(gltf.scene);
   }
 );
+// frame scene with pinkball
+gltfLoader.load("230907cup_bg_constructionFrame.glb", (gltf) => {
+  gltf.scene.traverse((child) => {
+    child.material = tubeWireFrameMaterial;
+  });
+
+  //Get each objects
+  const floorSphereMesh = gltf.scene.children.find(
+    (child) => child.name === "Sphere"
+  );
+  //floorSphereMesh.visible = false;
+  // Apply materials
+  //floorSphereMesh.material = floorSphereMeshMaterial;
+
+  scene.add(gltf.scene);
+});
 // pinkball animation
 gltfLoader.load("230817_pinkball_ani_test.glb", (gltf) => {
   gltf.scene.traverse((child) => {
@@ -156,9 +173,6 @@ gltfLoader.load("crossing_weave_x.glb", (gltf) => {
     (child) => child.name === "weaveCross"
   );
   weaveXCrossing.visible = false;
-  // mixer = new THREE.AnimationMixer(gltf.scene)
-  // const action = mixer.clipAction(gltf.animations[0])
-  // action.play()
   scene.add(gltf.scene);
 });
 // TorusKnot from blender
@@ -196,49 +210,22 @@ gltfLoader.load("230826crossing_control.glb", (gltf) => {
 // locomotion path from blender
 gltfLoader.load("230827path.glb", (gltf) => {
   gltf.scene.traverse((child) => {});
-  scene.add(gltf.scene);
+  //scene.add(gltf.scene);
 });
-
-// //test control cube move
-// const controlCube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff }))
-// let cubeEdgeScale = 0.1
-// controlCube.scale.set(cubeEdgeScale, cubeEdgeScale, cubeEdgeScale)
-// //controlCube.position.set(0,0,0)
-// scene.add(controlCube)
-
-// // key controls
-// //document - web page loaded in brower
-// //onkeydown - listens for when a key is pressed; if so, fires an event
-// //function - runs when event fired (key pressed)
-// //(e) - the event that fired; info on which key was pressed; can use any name: e, event
-// document.onkeydown = function (e) {
-//   let moveRate = -0.05
-
-//   // print out onkeydown event
-//   //console.log(e);
-
-//   if (e.keyCode === 37 || e.keyCode === 65) {
-//     // if left arrow key pressed
-//     controlCube.position.x -= moveRate;// change x by moveRate LEFT
-//   }
-//   if (e.keyCode === 39 || e.keyCode === 68) {
-//     // if left arrow key pressed
-//     controlCube.position.x += moveRate;// change x by moveRate RIGHT
-//   }
-//   if (e.keyCode === 38 || e.keyCode === 87) {
-//     // if left arrow key pressed
-//     controlCube.position.z -= moveRate;// change x by moveRate FORWARD
-//   }
-//   if (e.keyCode === 40 || e.keyCode === 83) {
-//     // if left arrow key pressed
-//     controlCube.position.z += moveRate;// change x by moveRate BACKWARD
-//   }
-// }
 
 /**
  * Lights
  */
 // todo: use './lights.js' later
+const ambientLight = new THREE.AmbientLight(0xffffff, 0);
+ambientLight.position.set(2, 2, 2);
+scene.add(ambientLight);
+const rollup = gui.addFolder("Ambient");
+rollup.add(ambientLight, "visible");
+rollup.add(ambientLight, "intensity", 0.0, 1.0);
+rollup.add(ambientLight.color, "r", 0.0, 1.0);
+rollup.add(ambientLight.color, "g", 0.0, 1.0);
+rollup.add(ambientLight.color, "b", 0.0, 1.0);
 
 /**
  * Fireflies
@@ -251,7 +238,7 @@ import {
 
 // Points
 const fireflies = new THREE.Points(firefliesGeometry, firefliesMaterial);
-scene.add(fireflies);
+//scene.add(fireflies);
 
 /**
  * Sizes
@@ -285,51 +272,42 @@ window.addEventListener("resize", () => {
 /**
  * Fullscreen
  */
-window.addEventListener('dblclick', () =>
-{
-    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement
+window.addEventListener("dblclick", () => {
+  const fullscreenElement =
+    document.fullscreenElement || document.webkitFullscreenElement;
 
-    if(!fullscreenElement)
-    {
-        if(canvas.requestFullscreen)
-        {
-            canvas.requestFullscreen()
-        }
-        else if(canvas.webkitRequestFullscreen)
-        {
-            canvas.webkitRequestFullscreen()
-        }
+  if (!fullscreenElement) {
+    if (canvas.requestFullscreen) {
+      canvas.requestFullscreen();
+    } else if (canvas.webkitRequestFullscreen) {
+      canvas.webkitRequestFullscreen();
     }
-    else
-    {
-        if(document.exitFullscreen)
-        {
-            document.exitFullscreen()
-        }
-        else if(document.webkitExitFullscreen)
-        {
-            document.webkitExitFullscreen()
-        }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
     }
-})
+  }
+});
 
 /**
  * Camera
  */
-//import { camera, controls } from "./camera";
-const camera = new THREE.PerspectiveCamera(
-  45,
-  sizes.width / sizes.height,
-  0.1,
-  100
-);
-camera.position.x = 1;
-camera.position.y = 0;
-camera.position.z = 1;
+import { camera, controls } from "./camera";
+// const camera = new THREE.PerspectiveCamera(
+//   45,
+//   sizes.width / sizes.height,
+//   0.1,
+//   100
+// );
+// camera.position.x = 1;
+// camera.position.y = 0;
+// camera.position.z = 1;
 
 // work Controls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
+// const controls = new OrbitControls(camera, canvas);
+// controls.enableDamping = true;
 
 /**
  * Renderer
@@ -347,75 +325,92 @@ import {
   sphereMaterial,
 } from "./utils";
 
-/**
- * Spheres
- */
-// import { spheres, createSphere } from "./spheres";
+// let scene_scrolling = new THREE.Scene();
+//   // *background texture
+//   //blur
+//   const bgTexture_blur = textureLoader.load(
+//     "scene_scrolling_blur_bg_1_darker.jpg"
+//   );
+//   //const bgTexture_blur = textureLoader.load("scene_scrolling_blur_bg_1.jpg");
+//   bgTexture_blur.colorSpace = THREE.SRGBColorSpace;
+//   scene.background = bgTexture_blur;
+//   //snow
+//   const bgTexture_snow = textureLoader.load("scene_scrolling_snow_bg_1.jpg");
+//   bgTexture_snow.colorSpace = THREE.SRGBColorSpace;
+//   scene.background = bgTexture_snow;
+//   //snow bump
+//   const bgTexture_snowbump = textureLoader.load(
+//     "scene_scrolling_blur_bg_1.jpg"
+//   );
+//   bgTexture_snowbump.colorSpace = THREE.SRGBColorSpace;
+//   //scene.background = bgTexture_snowbump;
+//   // *object texture
+//   //blur
+//   const textureBlur = textureLoader.load("blur.jpeg");
+//   textureBlur.colorSpace = THREE.SRGBColorSpace;
+//   //snow
+//   const textureSnow = textureLoader.load("snow.jpeg");
+//   textureSnow.colorSpace = THREE.SRGBColorSpace;
+//   //snowbump
+//   const textureSnowbump = textureLoader.load("snowbump.jpeg");
+//   textureSnowbump.colorSpace = THREE.SRGBColorSpace;
+//   // *material
+//   let materialBlur = new THREE.MeshMatcapMaterial({
+//     matcap: textureBlur,
+//   });
+//   let geometry_scrolling = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+//   let mesh_scrolling = new THREE.Mesh(geometry_scrolling, materialBlur);
 
-// createSphere(sphereShapeScale, { x: 0, y: 3, z: 0 });
-// createSphere(sphereShapeScale, sphereBeginPosition);
-// //console.log(objectToUpdate)
-
-/**
- * createBox
- */
-import { boxes, createBox } from "./boxes";
-// createBox(1, 1, 1, { x: 0, y: 3, z: 0 });
-
-// const sphereMaterial = new THREE.MeshStandardMaterial({
-//   metalness: 0.3,
-//   roughness: 0.4,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//   for (let index = 0; index < 300; index++) {
+//     let random = new THREE.Vector3().randomDirection();
+//     let clone = mesh_scrolling.clone();
+//     clone.position.copy(random);
+//     clone.rotation.x = Math.random();
+//     clone.rotation.y = Math.random();
+//     scene.add(clone);
+//   }
+// const scenes = [
+//   {
+//     background: bgTexture_blur,
+//     matcap: textureBlur,
+//   },
+//   {
+//     background: bgTexture_snow,
+//     matcap: textureSnow,
+//   },
+//   {
+//     background: bgTexture_snowbump,
+//     matcap: textureSnowbump,
+//   },
+// ];
 
 // todo replicating amazing midwarm.com look with threejs
-// import {useState} from 'react'
-// const [userData, setUserData] = useState({})
 
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.8;
 
 //todo setting()
 const params = {
-  progress: 0,
-  exposure: 2,
-  bloomStrength: 1, //3//1.5
-  bloomThreshold: 0.05, //0.01//0.05
-  bloomRadius: 0.8, //0.27//0.8
+  progress: 0, //*0.09
+  exposure: 0.68, //!2//*2.05
+  bloomStrength: 3, //3//1.5//!1//*0.79
+  bloomThreshold: 0.15, //0.01//0.05//!0.05//*0
+  bloomRadius: 0, //0.27//0.8//!0.8//*3
 };
 // post-processing GUI
-gui.add(params, "progress", 0, 3, 0.01).onChange(()=>{
+gui.add(params, "progress", 0, 3, 0.01).onChange(() => {
   holoEffect.uniforms.progress.value = params.progress;
 });
-gui.add(params, "exposure", 0, 3, 0.01).onChange(()=>{
+gui.add(params, "exposure", 0, 3, 0.01).onChange(() => {
   renderer.toneMappingExposure = params.exposure;
 });
-gui.add(params, "bloomStrength", 0, 3, 0.01).onChange((val)=>{
+gui.add(params, "bloomStrength", 0, 3, 0.01).onChange((val) => {
   bloomPass.strength = val;
 });
-gui.add(params, "bloomThreshold", 0, 3, 0.01).onChange((val)=>{
+gui.add(params, "bloomThreshold", 0, 3, 0.01).onChange((val) => {
   bloomPass.threshold = val;
 });
-gui.add(params, "bloomRadius", 0, 3, 0.01).onChange((val)=>{
+gui.add(params, "bloomRadius", 0, 3, 0.01).onChange((val) => {
   bloomPass.radius = val;
 });
 
@@ -447,8 +442,6 @@ let envMap, m;
 const humanScale = 0.6;
 let exportHumanModel;
 let getChildHumanModel;
-// define humanModel to get huamnModel in new THREE.TextureLoader().load('env.jpg', (texture)
-//let humanModel;
 
 //! pmremGenerator
 const pmremGenertor = new THREE.PMREMGenerator(renderer);
@@ -584,32 +577,98 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
     humanModel.material = m;
     // scene add
     scene.add(humanModelObject);
-    // print humanModel
-    //console.log("[inner]humanModel = " + humanModel);
   });
 });
 
-// print humanModel
-// console.log("[outer]humanModel = "  + humanModel)
 
-// // !shader human yuri
-// gltfLoader.load(
-//   'shadertest_yuri_human.glb',
-//   (gltf) => {
-//     gltf.scene.traverse((child) => {
-//     })
-//     // get human model
-//     const humanModel = gltf.scene.children.find(child =>
-//       child => child.name === 'HG_Body')
-//     humanModel.scale.set(1, 1, 1)
-//     humanModel.geometry.center()
-//     // apply material
-//     //humanModel.material = humanModelMaterial
-//     // scene add
-//     scene.add(gltf.scene)
-//   }
-// )
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//scroll based camera animation
+import { Curve, Vector3 } from "three";
+class GrannyKnot extends Curve {
+  getPoint(t, optionalTarget = new Vector3()) {
+    const point = optionalTarget;
+    t = 2 * Math.PI * t;
+    const x =
+      -0.22 * Math.cos(t) -
+      1.28 * Math.sin(t) -
+      0.44 * Math.cos(3 * t) -
+      0.78 * Math.sin(3 * t);
+    const y =
+      -0.1 * Math.cos(2 * t) -
+      0.27 * Math.sin(2 * t) +
+      0.38 * Math.cos(4 * t) +
+      0.46 * Math.sin(4 * t);
+    const z = 0.7 * Math.cos(3 * t) - 0.4 * Math.sin(3 * t);
+    return point.set(x, y, z).multiplyScalar(20);
+  }
+}
+const adjustScaleNum = 0.03;
+const adjustPosX = 0.25;
+const adjustPosY = 0;
+const adjustPosZ = 1.7;
+//const curve = new THREE.TorusKnotGeometry();
+const curve = new GrannyKnot(); // from curveextra.js
+const tubeGeo = new THREE.TubeGeometry(curve, 150, 2, 2, true); // path, tubeSegs, radius, rSegs, loop?
+const tubeMat = new THREE.MeshBasicMaterial({
+  color: 0x7a7f80, //steel
+  wireframe: true,
+});
+const tube = new THREE.Mesh(tubeGeo, tubeMat);
+tube.position.set(adjustPosX, adjustPosY, adjustPosZ);
+tube.scale.set(adjustScaleNum, adjustScaleNum, adjustScaleNum);
+scene.add(tube);
+
+//VARIABLES
+const position = new THREE.Vector3(); //camera position on curve
+const cameraTarget = new THREE.Object3D(); // where camera will look at
+const looptime = 50; //looptime (speed of roller coaster)
+
+function updateCamera() {
+  const time = clock.getElapsedTime();
+  const t = (time % looptime) / looptime;
+  const t2 = ((time + 0.1) % looptime) / looptime;
+
+  const pos = tube.geometry.parameters.path.getPoint(t);
+  const pos2 = tube.geometry.parameters.path.getPoint(t2);
+
+  //const adjustScaleNum = 0.1;
+  camera.position.set(
+    adjustPosX + adjustScaleNum * pos.x,
+    adjustPosY + adjustScaleNum * (pos.y + 4),
+    adjustPosZ + adjustScaleNum * pos.z
+  );
+  cameraTarget.position.set(
+    adjustPosX + adjustScaleNum * pos2.x,
+    adjustPosY + adjustScaleNum * (pos2.y + 4),
+    adjustPosZ + adjustScaleNum * pos2.z
+  );
+  camera.lookAt(cameraTarget.position);
+}
+
+//threejs journey 
+let scrollY = window.scrollY;
+window.addEventListener('scroll', () => {
+  scrollY = window.scrollY;
+  console.log("user is scrolling");
+});
 
 
 
@@ -650,20 +709,6 @@ const tick = () => {
   // world.step(a fixed time, how much time passed since the last step, how much iterations the world can apply to catch up with a potential delay)
   world.step(1 / 60, deltaTime, 3);
 
-  //------------------
-  // for (const object of spheres) {
-  //   let x = 1 / object.body.position.x;
-  //   //不能有xyz達到0
-  //   object.body.applyLocalForce(
-  //     new CANNON.Vec3(
-  //       -10 * object.body.position.x,
-  //       -10 * object.body.position.y,
-  //       -10 * object.body.position.z
-  //     ),
-  //     new CANNON.Vec3(0, 0, 0)
-  //   );
-  //   object.mesh.quaternion.copy(object.body.quaternion);
-  // }
   for (const object of objectToUpdate) {
     object.mesh.position.copy(object.body.position);
     object.mesh.quaternion.copy(object.body.quaternion);
@@ -671,7 +716,6 @@ const tick = () => {
 
   // Update Material
   //firefliesMaterial.uniforms.uTime.value = elapsedTime;
-
   //m.userData.shader.uniforms.uTime.value = elapsedTime
   //!export model //console.log(exportHumanModel)
   if (getChildHumanModel) {
@@ -684,25 +728,10 @@ const tick = () => {
       }
     }
     getChildHumanModel.rotation.y = elapsedTime * 0.05;
-    //getChildHumanModel.rotation.y -=0.01
   }
-  //console.log(exportHumanModel)
-  //console.log(getChildHumanModel)
 
-  // if m.userData exists, update shader uniforms
-  // print humanModel
-  // if (m && m.userData && m.userData.shader && m.userData.shader.uniforms) {
-  //   console.log("[outer]humanModel = " + humanModel);
-  //   console.log("[outer]humanModel.userData = " + humanModel.userData);
-  //   console.log(
-  //     "[outer]humanModel.userData.shader = " + humanModel.userData.shader
-  //   );
-  //   console.log("m.userData = " + m.userData);
-  //   console.log("m.userData.shader = " + m.userData.shader);
-  //   console.log("m.userData.shader.uniforms = " + m.userData.shader.uniforms);
-
-  //   humanModel.userData.shader.uniforms.uTime.value = elapsedTime + 0.05;
-  // }
+  //scroll
+  updateCamera();
 
   // Update mixer
   if (mixer !== null) {
@@ -716,7 +745,6 @@ const tick = () => {
   renderer.render(scene, camera);
 
   //todo humanmodel.userData.shader.uniforms.uTime.value = time
-  //time += 0.05
 
   // Call tick again on the next frame
   window.requestAnimationFrame(tick);

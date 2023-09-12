@@ -2,9 +2,16 @@
  * Sizes
  */
 
+import {
+  firefliesGeometry,
+  firefliesCount,
+  firefliesMaterial,
+} from "./fireflies";
 
-
+import { camera, controls } from "./camera";
 export {sizes};
+
+
 
 const sizes = {
     width: window.innerWidth,
@@ -21,8 +28,8 @@ const sizes = {
     camera.updateProjectionMatrix();
   
     // Update renderer
-    renderer.setSize(sizes.width, sizes.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // renderer.setSize(sizes.width, sizes.height);
+    // renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   
     // Update fireflies
     firefliesMaterial.uniforms.uPixelRatio.value = Math.min(
