@@ -10,8 +10,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { HoloEffect } from "./HoloEffect.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { gltfLoader } from "./loaders";
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 /**
  * Base
@@ -40,8 +39,6 @@ import {
   torusKnotSphereTexture,
   torusKnotSphereTexture_blackwhite,
 } from "./loaders";
-
-
 
 /**
  * Material
@@ -212,6 +209,14 @@ gltfLoader.load("230827path.glb", (gltf) => {
   gltf.scene.traverse((child) => {});
   //scene.add(gltf.scene);
 });
+
+// points of interest
+const points = [
+  {
+    position: new THREE.Vector3(1.55, 0.3, -0.6),
+    element: document.querySelector(".point-0"),
+  },
+];
 
 /**
  * Lights
@@ -580,61 +585,66 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
   });
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //scroll based camera animation
-import { Curve, Vector3 } from "three";
-class GrannyKnot extends Curve {
-  getPoint(t, optionalTarget = new Vector3()) {
-    const point = optionalTarget;
-    t = 2 * Math.PI * t;
-    const x =
-      -0.22 * Math.cos(t) -
-      1.28 * Math.sin(t) -
-      0.44 * Math.cos(3 * t) -
-      0.78 * Math.sin(3 * t);
-    const y =
-      -0.1 * Math.cos(2 * t) -
-      0.27 * Math.sin(2 * t) +
-      0.38 * Math.cos(4 * t) +
-      0.46 * Math.sin(4 * t);
-    const z = 0.7 * Math.cos(3 * t) - 0.4 * Math.sin(3 * t);
-    return point.set(x, y, z).multiplyScalar(20);
-  }
-}
-const adjustScaleNum = 0.03;
-const adjustPosX = 0.25;
-const adjustPosY = 0;
-const adjustPosZ = 1.7;
-//const curve = new THREE.TorusKnotGeometry();
-const curve = new GrannyKnot(); // from curveextra.js
-const tubeGeo = new THREE.TubeGeometry(curve, 150, 2, 2, true); // path, tubeSegs, radius, rSegs, loop?
-const tubeMat = new THREE.MeshBasicMaterial({
-  color: 0x7a7f80, //steel
-  wireframe: true,
+//curve from blender
+const begin_point = new THREE.Vector3(0, 0, 0);
+const b = new THREE.Vector3(0, -0.142024, 0.86075);
+const c = new THREE.Vector3(0, -1.58378, 0.86075);
+const d = new THREE.Vector3(0, -1.58378, -0.744549);
+const e = new THREE.Vector3(0.886572, -0.529361, -0.744549);
+const f = new THREE.Vector3(0.886572, -0.525057, 0.374426);
+const g = new THREE.Vector3(-0.20658, -1.23087, 0.374426);
+const h = new THREE.Vector3(-0.185061, -2.20352, -0.124809);
+const i = new THREE.Vector3(0.921002, -2.07441, -0.124809);
+const j = new THREE.Vector3(0.908091, -1.34277, -0.228099);
+const end_point = new THREE.Vector3(-0.060253, -0.357211, -0.064556);
+//const end_point =new THREE.Vector3(-0.088651, -0.381501, -0.06975)
+//isline ismesh DIFFERENCE
+const blender_curve = new THREE.CatmullRomCurve3([
+  begin_point,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  end_point,
+  begin_point,
+]);
+
+/**
+ * GPT
+ */
+const gpt_geometry = new THREE.TubeGeometry(blender_curve, 200, 0.01, 2, true);
+const gpt_material = new THREE.MeshBasicMaterial({
+  color: 0xff0000,
+  wireframe:true 
 });
-const tube = new THREE.Mesh(tubeGeo, tubeMat);
-tube.position.set(adjustPosX, adjustPosY, adjustPosZ);
-tube.scale.set(adjustScaleNum, adjustScaleNum, adjustScaleNum);
-scene.add(tube);
+const gpt_tubeMesh = new THREE.Mesh(gpt_geometry, gpt_material);
+// gpt_tubeMesh.rotation.x = Math.PI * 0.5;
+// gpt_tubeMesh.rotation.z = Math.PI;
+// gpt_tubeMesh.rotation.y = Math.PI;
+
+scene.add(gpt_tubeMesh);
+/**
+ * GPT
+ */
+const blender_points = blender_curve.getPoints(50);
+const geometry = new THREE.BufferGeometry().setFromPoints(blender_points);
+const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+
+let cameraProgress = 0;
+
+document.addEventListener(
+  "mousewheel",
+  (event) => {
+    cameraProgress += event.deltaY / 1000;
+  },
+  false
+);
 
 //VARIABLES
 const position = new THREE.Vector3(); //camera position on curve
@@ -642,53 +652,29 @@ const cameraTarget = new THREE.Object3D(); // where camera will look at
 const looptime = 50; //looptime (speed of roller coaster)
 
 function updateCamera() {
-  const time = clock.getElapsedTime();
+  // const time = clock.getElapsedTime();
+  const time = cameraProgress;
   const t = (time % looptime) / looptime;
-  const t2 = ((time + 0.1) % looptime) / looptime;
+  const t2 = ((time + 0.01) % looptime) / looptime;
 
-  const pos = tube.geometry.parameters.path.getPoint(t);
-  const pos2 = tube.geometry.parameters.path.getPoint(t2);
+  console.log(gpt_tubeMesh.rotation );
 
-  //const adjustScaleNum = 0.1;
+  const pos = gpt_tubeMesh.geometry.parameters.path.getPointAt(t);
+  const pos2 = gpt_tubeMesh.geometry.parameters.path.getPointAt(t2);
+
   camera.position.set(
-    adjustPosX + adjustScaleNum * pos.x,
-    adjustPosY + adjustScaleNum * (pos.y + 4),
-    adjustPosZ + adjustScaleNum * pos.z
+    pos.x,
+    pos.y + 0.004,
+    pos.z
   );
   cameraTarget.position.set(
-    adjustPosX + adjustScaleNum * pos2.x,
-    adjustPosY + adjustScaleNum * (pos2.y + 4),
-    adjustPosZ + adjustScaleNum * pos2.z
+    pos2.x,
+    pos2.y + 0.004,
+    pos2.z
   );
+
   camera.lookAt(cameraTarget.position);
 }
-
-//threejs journey 
-let scrollY = window.scrollY;
-window.addEventListener('scroll', () => {
-  scrollY = window.scrollY;
-  console.log("user is scrolling");
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -740,6 +726,17 @@ const tick = () => {
 
   // Update controls
   controls.update();
+
+  // go through each point
+  // for(const point of points)
+  // {
+  //     const screenPosition = point.position.clone()
+  //     screenPosition.project(camera)
+
+  //     const translateX = screenPosition.x * sizes.width * 0.5
+  //     const translateY = -screenPosition.y * sizes.height * 0.5
+  //     point.element.style.transform = `translateX(${translateX}px) translateY(${translateY}px)`
+  // }
 
   // Render
   renderer.render(scene, camera);
