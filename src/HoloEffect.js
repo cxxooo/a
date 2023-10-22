@@ -138,13 +138,16 @@ const HoloEffect = {
 
 			vec3 hologram = texture2D(tDiffuse, uv).rgb;
 
-			vec3 background = vec3(0., 0.65, 1.)*.3;
+			//vec3 background = vec3(0., 0.65, 1.)*.3;
+			vec3 background = vec3(1., .65, 0.2)*.3;
 			//vec3 background_benikeshinezumi = vec3(0.32, 0.26, 0.24)*.5;
 
 
 			vec3 combinedColor = color.rgb + hologram*holoIntensity;
 			// luminosity is 0.21R + 0.72G + 0.07B
-			vec3 luminance = vec3(0.299, 0.587, 0.114);
+			//182 142 85 
+			vec3 luminance = vec3(0.6, 0.3, 0.01);
+			//vec3 luminance = vec3(0.299, 0.587, 0.114);
 
 			float lumFront = dot(luminance,combinedColor);
 			float lumBack = dot(luminance,background);

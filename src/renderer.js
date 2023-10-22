@@ -29,7 +29,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-debugObject.clearColor = "#060505";
+debugObject.clearColor = "#070707";
 //debugObject.clearColor = '#1c1c1c'
 renderer.setClearColor(debugObject.clearColor);
 gui

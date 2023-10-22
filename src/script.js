@@ -10,7 +10,10 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { HoloEffect } from "./HoloEffect.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { gltfLoader } from "./loaders";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import testVertexShader from './shader/floating/vertex.glsl';
+import testFragmentShader from './shader/floating/fragment.glsl';
+
 
 /**
  * Base
@@ -40,6 +43,8 @@ import {
   torusKnotSphereTexture_blackwhite,
 } from "./loaders";
 
+
+
 /**
  * Material
  */
@@ -57,12 +62,26 @@ import {
   parametersGeo,
   materialGeo,
 } from "./material";
+const material_floating = new THREE.ShaderMaterial({
+  extensions: {
+    derivatives: "#extension GL_OES_standard_derivatives: enable"
+  },
+  side: THREE.DoubleSide,
+  uniforms: {
+    time: { value: 0 },
+    solution: { value: new THREE.Vector4() }
+  },
+  wireframe: true,
+  vertexShader: testVertexShader,
+  fragmentShader: testFragmentShader,
+})
+console.log(material_floating);
 
 /**
  * Physics
  */
 import { world, planet, concreteMaterial, plasticMaterial } from "./physics";
-//scene.add(planet);
+scene.add(planet);
 
 /**
  * Objects
@@ -73,31 +92,59 @@ import {
 } from "./objects";
 //scene.add(torusKnotGeometryMesh);
 
+const geometry_floating = new THREE.PlaneGeometry(4, 2, 300, 150)
+// Mesh
+const plane = new THREE.Mesh(geometry_floating, material_floating)
+plane.castShadow = plane.receiveShadow = true
+plane.scale.set(2, 2, 2)
+plane.position.set(0, -1, 1)
+plane.rotation.x = Math.PI / 2
+plane.rotation.z = Math.PI / 2
+scene.add(plane)
+
+const geometry_floating_2 = new THREE.PlaneGeometry(0.5, 0.5, 50, 50)
+// Mesh
+const plane_2 = new THREE.Mesh(geometry_floating_2, material_floating)
+plane_2.castShadow = plane_2.receiveShadow = true
+plane_2.position.set(0, 0, 0.3)
+scene.add(plane_2)
+
+const geometry_floating_3 = new THREE.PlaneGeometry(0.5, 0.5, 50, 50)
+// Mesh
+const plane_3 = new THREE.Mesh(geometry_floating_3, material_floating)
+plane_3.castShadow = plane_3.receiveShadow = true
+plane_3.position.set(0, 0.6, 0.5)
+scene.add(plane_3)
+
+
+
+
+
 // GUI
-gui
-  .addColor(parametersGeo, "materialColor")
-  .onChange(() => {
-    materialGeo.color.set(parametersGeo.materialColor);
-  })
-  .name("geometryColor");
-gui
-  .add(torusKnotGeometryMesh.position, "x")
-  .min(-adjustNum)
-  .max(adjustNum)
-  .step(adjustStep)
-  .name("torusKnotGeometryMeshX");
-gui
-  .add(torusKnotGeometryMesh.position, "y")
-  .min(-adjustNum)
-  .max(adjustNum)
-  .step(adjustStep)
-  .name("torusKnotGeometryMeshY");
-gui
-  .add(torusKnotGeometryMesh.position, "z")
-  .min(-adjustNum)
-  .max(adjustNum)
-  .step(adjustStep)
-  .name("torusKnotGeometryMeshZ");
+// gui
+//   .addColor(parametersGeo, "materialColor")
+//   .onChange(() => {
+//     materialGeo.color.set(parametersGeo.materialColor);
+//   })
+//   .name("geometryColor");
+// gui
+//   .add(torusKnotGeometryMesh.position, "x")
+//   .min(-adjustNum)
+//   .max(adjustNum)
+//   .step(adjustStep)
+//   .name("torusKnotGeometryMeshX");
+// gui
+//   .add(torusKnotGeometryMesh.position, "y")
+//   .min(-adjustNum)
+//   .max(adjustNum)
+//   .step(adjustStep)
+//   .name("torusKnotGeometryMeshY");
+// gui
+//   .add(torusKnotGeometryMesh.position, "z")
+//   .min(-adjustNum)
+//   .max(adjustNum)
+//   .step(adjustStep)
+//   .name("torusKnotGeometryMeshZ");
 
 /**
  * Models
@@ -115,7 +162,8 @@ gltfLoader.load(
     gltf.scene.traverse((child) => {
       child.material = bakedMaterial;
     });
-
+    const staticBall = gltf.scene
+    staticBall.position.set(0, 0, 1.)
     //Get each objects
     const floorSphereMesh = gltf.scene.children.find(
       (child) => child.name === "Sphere"
@@ -124,7 +172,7 @@ gltfLoader.load(
     // Apply materials
     floorSphereMesh.material = floorSphereMeshMaterial;
 
-    //scene.add(gltf.scene);
+    scene.add(gltf.scene);
   }
 );
 // frame scene with pinkball
@@ -153,7 +201,9 @@ gltfLoader.load("230817_pinkball_ani_test.glb", (gltf) => {
   const orbitPinkBall = gltf.scene.children.find(
     (child) => child.name === "pinkball_top_animation"
   );
-
+  const animationPinkBall = gltf.scene;
+  animationPinkBall.position.set(1.5, 0, 3)
+  //console.log(animationPinkBall.position)
   mixer = new THREE.AnimationMixer(gltf.scene);
   const action = mixer.clipAction(gltf.animations[0]);
   action.play();
@@ -206,17 +256,23 @@ gltfLoader.load("230826crossing_control.glb", (gltf) => {
 });
 // locomotion path from blender
 gltfLoader.load("230827path.glb", (gltf) => {
-  gltf.scene.traverse((child) => {});
+  gltf.scene.traverse((child) => { });
   //scene.add(gltf.scene);
 });
+// human in loop
+gltfLoader.load("231022humanInLoop.glb", (gltf) => {
+  gltf.scene.traverse((child) => {
+  });
+  scene.add(gltf.scene)
+})
 
 // points of interest
 const points = [
   {
-    position: new THREE.Vector3(1.55, 0.3, -0.6),
-    element: document.querySelector(".point-0"),
-  },
-];
+    position: new THREE.Vector3(1.55, 0.3, - 0.6),
+    element: document.querySelector('.point-0')
+  }
+]
 
 /**
  * Lights
@@ -225,12 +281,12 @@ const points = [
 const ambientLight = new THREE.AmbientLight(0xffffff, 0);
 ambientLight.position.set(2, 2, 2);
 scene.add(ambientLight);
-const rollup = gui.addFolder("Ambient");
-rollup.add(ambientLight, "visible");
-rollup.add(ambientLight, "intensity", 0.0, 1.0);
-rollup.add(ambientLight.color, "r", 0.0, 1.0);
-rollup.add(ambientLight.color, "g", 0.0, 1.0);
-rollup.add(ambientLight.color, "b", 0.0, 1.0);
+//const rollup = gui.addFolder("Ambient");
+// rollup.add(ambientLight, "visible");
+// rollup.add(ambientLight, "intensity", 0.0, 1.0);
+// rollup.add(ambientLight.color, "r", 0.0, 1.0);
+// rollup.add(ambientLight.color, "g", 0.0, 1.0);
+// rollup.add(ambientLight.color, "b", 0.0, 1.0);
 
 /**
  * Fireflies
@@ -243,7 +299,7 @@ import {
 
 // Points
 const fireflies = new THREE.Points(firefliesGeometry, firefliesMaterial);
-//scene.add(fireflies);
+scene.add(fireflies);
 
 /**
  * Sizes
@@ -313,7 +369,7 @@ import { camera, controls } from "./camera";
 // work Controls
 // const controls = new OrbitControls(camera, canvas);
 // controls.enableDamping = true;
-
+//camera.lookAt();
 /**
  * Renderer
  */
@@ -390,17 +446,16 @@ import {
 // ];
 
 // todo replicating amazing midwarm.com look with threejs
-
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.8;
 
 //todo setting()
 const params = {
-  progress: 0, //*0.09
-  exposure: 0.68, //!2//*2.05
-  bloomStrength: 3, //3//1.5//!1//*0.79
-  bloomThreshold: 0.15, //0.01//0.05//!0.05//*0
-  bloomRadius: 0, //0.27//0.8//!0.8//*3
+  progress: 0.00, //*0.09
+  exposure: 1.62, //!2//*2.05
+  bloomStrength: 0.79, //3//1.5//!1//*0.79
+  bloomThreshold: 0, //0.01//0.05//!0.05//*0
+  bloomRadius: 3, //0.27//0.8//!0.8//*3
 };
 // post-processing GUI
 gui.add(params, "progress", 0, 3, 0.01).onChange(() => {
@@ -444,7 +499,7 @@ composer.setSize(sizes.width, sizes.height);
 
 //todo define
 let envMap, m;
-const humanScale = 0.6;
+const humanScale = 0.3;
 let exportHumanModel;
 let getChildHumanModel;
 
@@ -461,15 +516,17 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
 
   // !shader human yuri
   gltfLoader.load("shadertest_yuri_human.glb", (gltf) => {
-    gltf.scene.traverse((child) => {});
+    gltf.scene.traverse((child) => { });
     const humanModelObject = gltf.scene;
     exportHumanModel = humanModelObject;
     // get human model
     const humanModel = gltf.scene.children.find(
       (child) => (child) => child.name === "HG_Body"
     );
+
     humanModel.scale.set(humanScale, humanScale, humanScale);
     humanModel.geometry.center();
+    humanModel.position.set(0, -0.1, 0.4);
     getChildHumanModel = humanModel;
 
     // apply material
@@ -585,66 +642,62 @@ new THREE.TextureLoader().load("env.jpg", (texture) => {
   });
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //scroll based camera animation
-//curve from blender
-const begin_point = new THREE.Vector3(0, 0, 0);
-const b = new THREE.Vector3(0, -0.142024, 0.86075);
-const c = new THREE.Vector3(0, -1.58378, 0.86075);
-const d = new THREE.Vector3(0, -1.58378, -0.744549);
-const e = new THREE.Vector3(0.886572, -0.529361, -0.744549);
-const f = new THREE.Vector3(0.886572, -0.525057, 0.374426);
-const g = new THREE.Vector3(-0.20658, -1.23087, 0.374426);
-const h = new THREE.Vector3(-0.185061, -2.20352, -0.124809);
-const i = new THREE.Vector3(0.921002, -2.07441, -0.124809);
-const j = new THREE.Vector3(0.908091, -1.34277, -0.228099);
-const end_point = new THREE.Vector3(-0.060253, -0.357211, -0.064556);
-//const end_point =new THREE.Vector3(-0.088651, -0.381501, -0.06975)
-//isline ismesh DIFFERENCE
-const blender_curve = new THREE.CatmullRomCurve3([
-  begin_point,
-  b,
-  c,
-  d,
-  e,
-  f,
-  g,
-  h,
-  i,
-  j,
-  end_point,
-  begin_point,
-]);
-
-/**
- * GPT
- */
-const gpt_geometry = new THREE.TubeGeometry(blender_curve, 200, 0.01, 2, true);
-const gpt_material = new THREE.MeshBasicMaterial({
-  color: 0xff0000,
-  wireframe:true 
+import { Curve, Vector3 } from "three";
+class GrannyKnot extends Curve {
+  getPoint(t, optionalTarget = new Vector3()) {
+    const point = optionalTarget;
+    t = 2 * Math.PI * t;
+    const x =
+      -0.22 * Math.cos(t) -
+      1.28 * Math.sin(t) -
+      0.44 * Math.cos(3 * t) -
+      0.78 * Math.sin(3 * t);
+    const y =
+      -0.1 * Math.cos(2 * t) -
+      0.27 * Math.sin(2 * t) +
+      0.38 * Math.cos(4 * t) +
+      0.46 * Math.sin(4 * t);
+    const z = 0.7 * Math.cos(3 * t) - 0.4 * Math.sin(3 * t);
+    return point.set(x, y, z).multiplyScalar(20);
+  }
+}
+const adjustScaleNum = 0.03;
+const adjustPosX = 0.25;
+const adjustPosY = 0;
+const adjustPosZ = 1.7;
+//const curve = new THREE.TorusKnotGeometry();
+const curve = new GrannyKnot(); // from curveextra.js
+const tubeGeo = new THREE.TubeGeometry(curve, 150, 2, 2, true); // path, tubeSegs, radius, rSegs, loop?
+const tubeMat = new THREE.MeshBasicMaterial({
+  color: 0x7a7f80, //steel
+  wireframe: true,
 });
-const gpt_tubeMesh = new THREE.Mesh(gpt_geometry, gpt_material);
-// gpt_tubeMesh.rotation.x = Math.PI * 0.5;
-// gpt_tubeMesh.rotation.z = Math.PI;
-// gpt_tubeMesh.rotation.y = Math.PI;
-
-scene.add(gpt_tubeMesh);
-/**
- * GPT
- */
-const blender_points = blender_curve.getPoints(50);
-const geometry = new THREE.BufferGeometry().setFromPoints(blender_points);
-const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-
-let cameraProgress = 0;
-
-document.addEventListener(
-  "mousewheel",
-  (event) => {
-    cameraProgress += event.deltaY / 1000;
-  },
-  false
-);
+//const tube = new THREE.Mesh(tubeGeo, tubeMat);
+const tube = new THREE.Mesh(tubeGeo, material_floating);
+tube.position.set(adjustPosX, adjustPosY, adjustPosZ);
+tube.scale.set(adjustScaleNum, adjustScaleNum, adjustScaleNum);
+scene.add(tube);
 
 //VARIABLES
 const position = new THREE.Vector3(); //camera position on curve
@@ -652,29 +705,63 @@ const cameraTarget = new THREE.Object3D(); // where camera will look at
 const looptime = 50; //looptime (speed of roller coaster)
 
 function updateCamera() {
-  // const time = clock.getElapsedTime();
-  const time = cameraProgress;
+  const time = clock.getElapsedTime();
   const t = (time % looptime) / looptime;
-  const t2 = ((time + 0.01) % looptime) / looptime;
+  const t2 = ((time + 0.1) % looptime) / looptime;
 
-  console.log(gpt_tubeMesh.rotation );
+  const pos = tube.geometry.parameters.path.getPoint(t);
+  const pos2 = tube.geometry.parameters.path.getPoint(t2);
 
-  const pos = gpt_tubeMesh.geometry.parameters.path.getPointAt(t);
-  const pos2 = gpt_tubeMesh.geometry.parameters.path.getPointAt(t2);
-
+  const adjustScaleNum = 0.1;
   camera.position.set(
-    pos.x,
-    pos.y + 0.004,
-    pos.z
+    adjustPosX + adjustScaleNum * pos.x,
+    adjustPosY + adjustScaleNum * (pos.y + 4),
+    adjustPosZ + adjustScaleNum * pos.z
   );
   cameraTarget.position.set(
-    pos2.x,
-    pos2.y + 0.004,
-    pos2.z
+    adjustPosX + adjustScaleNum * pos2.x,
+    adjustPosY + adjustScaleNum * (pos2.y + 4),
+    adjustPosZ + adjustScaleNum * pos2.z
   );
-
   camera.lookAt(cameraTarget.position);
 }
+
+//
+// window.addEventListener("wheel", function(e){
+
+// })
+
+//threejs journey 
+// let scrollY = window.scrollY;
+// window.addEventListener('scroll', () => {
+//   scrollY = window.scrollY;
+//   console.log("user is scrolling");
+// });
+
+let cameraProgress = 0
+
+document.addEventListener("mousewheel", (event) => {
+  cameraProgress += event.deltaY / 100;
+}, false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -682,14 +769,26 @@ function updateCamera() {
  */
 const clock = new THREE.Clock();
 let previousTime = 0;
-const time = 0;
+let floattime;
 
 const tick = () => {
   //exportHumanModel.rotation.y +=0.01
+  //console.log(cameraProgress)
+  if (camera.position.x == 0) {
+    camera.position.z = 6.6 + (cameraProgress * 0.0000000000000000001)
+  if(camera.position.z <= 0.5 && camera.position.z>= -0.5){
+    console.log("confusion!")
+    console.log(camera.position.z)
+  }}
 
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - previousTime;
   previousTime = elapsedTime;
+
+  //floating update
+  floattime = elapsedTime / 10 + 0.0005;
+  material_floating.uniforms.time.value = floattime;
+  floattime = floattime + 0.0005;
 
   // Update physics
   // world.step(a fixed time, how much time passed since the last step, how much iterations the world can apply to catch up with a potential delay)
@@ -701,7 +800,7 @@ const tick = () => {
   }
 
   // Update Material
-  //firefliesMaterial.uniforms.uTime.value = elapsedTime;
+  firefliesMaterial.uniforms.uTime.value = elapsedTime;
   //m.userData.shader.uniforms.uTime.value = elapsedTime
   //!export model //console.log(exportHumanModel)
   if (getChildHumanModel) {
@@ -717,7 +816,8 @@ const tick = () => {
   }
 
   //scroll
-  updateCamera();
+  //updateCamera();
+  //console.log(camera.position)
 
   // Update mixer
   if (mixer !== null) {

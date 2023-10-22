@@ -30,10 +30,10 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.x = 1;//1
-camera.position.y = 0;//0
-camera.position.z = 1;//1
-
+camera.position.x = -0.1;
+camera.position.y = -0.12;
+camera.position.z = 6.6;
+//camera.rotateOnAxis.z = Math.PI/2;
 // work Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = false;

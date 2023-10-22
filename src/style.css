@@ -11,8 +11,8 @@
 
 .point {
     position: absolute;
-    top: 50%;
-    left: 50%
+    top: 10%;
+    left: 20%
 }
 
 .point:hover .label
@@ -37,14 +37,14 @@
     width: 400px;
     height: 40px;
     border-radius: 2%;
-    background: #00000077;
-    border: 0.5px solid #ffffff77;
-    color: #ffffff;
+    background: #00000000;
+    border: 0.5px solid #ffffff00;
+    color: #ffffff77;
     font-family: Helvetica, Arial, sans-serif;
-    text-align: center;
-    line-height: 40px;
+    text-align: left;
+    line-height: 20px;
     font-weight: 100;
-    font-size: 18px;
+    font-size: 15px;
     opacity: 1;
     cursor: help;
     transform: scale(0.001,0.001);
@@ -59,14 +59,14 @@
     width: 400px;
     height: 40px;
     border-radius: 2%;
-    background: #00000077;
-    border: 0.5px solid #ffffff77;
-    color: #ffffff;
+    background: #00000000;
+    border: 0.5px solid #00000000;
+    color: #00000077;
     font-family: Helvetica, Arial, sans-serif;
-    text-align: center;
+    text-align: left;
     line-height: 40px;
     font-weight: 100;
-    font-size: 18px;
+    font-size: 15px;
     opacity: 0;
     transition: opacity 0.9s;
     pointer-events: none;

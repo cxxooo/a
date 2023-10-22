@@ -54,9 +54,9 @@ debugObject.reset = () => {
   }
   objectToUpdate.splice(0, objectToUpdate.length)
 }
-gui.add(debugObject, 'reset')
-gui.add(debugObject, 'createSphere')
-gui.add(debugObject, 'createBox')
+//gui.add(debugObject, 'reset')
+//gui.add(debugObject, 'createSphere')
+//gui.add(debugObject, 'createBox')
 
 /**
  * Center of Gravity
